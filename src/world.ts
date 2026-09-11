@@ -84,7 +84,8 @@ export class WorldGenerator {
     this.app.root.addChild(this.root);
     this.root.addChild(this.backdrop);
     this.buildBackdrop();
-    for (let i=-5;i<=25;i++) this.createRow(i);
+    // Lighter startup for mobile. More rows stream in while playing.
+    for (let i=-3;i<=15;i++) this.createRow(i);
   }
 
   destroy() { this.root.destroy(); }

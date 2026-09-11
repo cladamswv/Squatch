@@ -9,8 +9,8 @@ import { GameUI } from './ui';
 import { ROW_Z, WorldGenerator } from './world';
 
 export class SquatchCrossingGame {
-  private app:pc.Application;
-  private save=new SaveStore();
+  private app!:pc.Application;
+  private save:SaveStore;
   private audio:AudioSystem;
   private ui:GameUI;
   private world!:WorldGenerator;
@@ -42,37 +42,50 @@ export class SquatchCrossingGame {
   private lastRenderAt=0;
 
   constructor(private canvas:HTMLCanvasElement, uiRoot:HTMLElement) {
-    this.app=new pc.Application(canvas,{
-      keyboard:new pc.Keyboard(window),
-      mouse:new pc.Mouse(canvas),
-      touch:'ontouchstart' in window ? new pc.TouchDevice(canvas) : undefined
-    });
-    this.app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
-    this.app.setCanvasResolution(pc.RESOLUTION_AUTO);
-    this.app.scene.ambientLight=new pc.Color(.46,.54,.49);
-    this.app.scene.exposure=1.15;
-
-    this.camera.addComponent('camera',{clearColor:new pc.Color(.42,.58,.61),fov:48,nearClip:.08,farClip:95});
-    this.app.root.addChild(this.camera);
-    this.sun.addComponent('light',{type:'directional',color:new pc.Color(1,.94,.79),intensity:1.75,castShadows:true,shadowDistance:34,shadowResolution:2048,shadowBias:.18,normalOffsetBias:.15});
-    this.sun.setEulerAngles(48,-35,0); this.app.root.addChild(this.sun);
-    this.fillLight.addComponent('light',{type:'directional',color:new pc.Color(.55,.72,.78),intensity:.4,castShadows:false});
-    this.fillLight.setEulerAngles(62,145,0); this.app.root.addChild(this.fillLight);
-
+    this.save=new SaveStore();
     this.audio=new AudioSystem(()=>this.save.data.settings);
     this.ui=new GameUI(uiRoot,{
       play:(daily)=>this.startRun(daily), pause:()=>this.pause(), resume:()=>this.resume(), home:()=>this.home(), retry:()=>this.startRun(this.lastDailyMode),
       previewSkin:(skin)=>this.previewSkin(skin), useSkin:(skin)=>this.useSkin(skin), claimMission:(id)=>this.claimMission(id),
       settingsChanged:()=>this.settingsChanged(), resetSave:()=>this.resetSave()
     });
-    this.ui.setSave(this.save.data); this.ui.applyAccessibility(this.save.data);
+    this.ui.setSave(this.save.data);
+    this.ui.applyAccessibility(this.save.data);
+    this.screen='menu';
+    this.ui.show('menu');
+
+    this.app=new pc.Application(canvas,{
+      graphicsDeviceOptions:{antialias:true,powerPreference:'high-performance'}
+    });
+    this.app.setCanvasFillMode(pc.FILLMODE_FILL_WINDOW);
+    this.app.setCanvasResolution(pc.RESOLUTION_AUTO);
+    this.app.start();
+    this.app.resizeCanvas();
+    this.app.scene.ambientLight=new pc.Color(.46,.54,.49);
+    this.app.scene.exposure=1.15;
+
+    this.camera.addComponent('camera',{clearColor:new pc.Color(.42,.58,.61),fov:48,nearClip:.08,farClip:95});
+    this.app.root.addChild(this.camera);
+    this.sun.addComponent('light',{type:'directional',color:new pc.Color(1,.94,.79),intensity:1.75,castShadows:true,shadowResolution:1024,shadowBias:.18,normalOffsetBias:.15});
+    this.sun.setEulerAngles(48,-35,0); this.app.root.addChild(this.sun);
+    this.fillLight.addComponent('light',{type:'directional',color:new pc.Color(.55,.72,.78),intensity:.4,castShadows:false});
+    this.fillLight.setEulerAngles(62,145,0); this.app.root.addChild(this.fillLight);
+
     this.applyQuality();
     this.setupInput();
-    this.createPreview();
     this.app.on('update',(dt:number)=>this.update(Math.min(dt,.05)));
-    this.app.start();
     window.addEventListener('resize',()=>this.app.resizeCanvas());
     document.addEventListener('visibilitychange',()=>{if(document.hidden&&this.screen==='playing') this.pause();});
+
+    requestAnimationFrame(()=>{
+      try {
+        this.createPreview();
+      } catch (err) {
+        console.error('Squatch preview failed to initialize',err);
+        this.ui.toast('3D scene failed to start. See boot error.','danger',10000);
+        throw err;
+      }
+    });
   }
 
   private blankRun():RunStats { return {score:0,coins:0,roads:0,trains:0,creeks:0,photos:0,unseenStreak:0}; }
