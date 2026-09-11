@@ -1,0 +1,13 @@
+{
+  "name": "Squatch Crossing",
+  "short_name": "Squatch",
+  "description": "Cross Appalachia. Dodge traffic. Stay out of sight.",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#18382f",
+  "theme_color": "#18382f",
+  "icons": [
+    {"src":"./icon.png","sizes":"1024x1024","type":"image/png","purpose":"any maskable"}
+  ]
+}

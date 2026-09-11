@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#18382f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" href="./icon.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <title>Squatch Crossing</title>
+  </head>
+  <body>
+    <div id="app-shell">
+      <canvas id="game-canvas" aria-label="Squatch Crossing 3D game"></canvas>
+      <div id="weather-fx" aria-hidden="true"></div>
+      <div id="vignette" aria-hidden="true"></div>
+      <div id="ui-root"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
